@@ -11,17 +11,19 @@ object Dependencies {
     val slf4j        = "2.0.17"
     val logback      = "1.5.32"
     val scalaLogging = "3.9.6"
+    val log4cats     = "2.7.0"
     val zerowaste    = "0.2.21"
     val scalacheck   = "1.19.0"
     val scalatest    = "3.2.19"
   }
 
   object Libraries {
-    val kwik       = "tech.kwik"      % "kwik"        % V.kwik
-    val cats       = "org.typelevel" %% "cats-core"   % V.cats
-    val catsEffect = "org.typelevel" %% "cats-effect" % V.catsEffect
-    val fs2Core    = "co.fs2"        %% "fs2-core"    % V.fs2
-    val fs2io      = "co.fs2"        %% "fs2-io"      % V.fs2
+    val kwik         = "tech.kwik"      % "kwik"           % V.kwik
+    val cats         = "org.typelevel" %% "cats-core"      % V.cats
+    val log4catsSl4j = "org.typelevel" %% "log4cats-slf4j" % V.log4cats
+    val catsEffect   = "org.typelevel" %% "cats-effect"    % V.catsEffect
+    val fs2Core      = "co.fs2"        %% "fs2-core"       % V.fs2
+    val fs2io        = "co.fs2"        %% "fs2-io"         % V.fs2
 
     // Runtime
     val decline        = "com.monovore"               %% "decline"         % V.decline

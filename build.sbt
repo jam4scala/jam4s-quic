@@ -105,15 +105,30 @@ lazy val root = (project in file("."))
 
 lazy val `jam4s-quic-core` = (project in file("modules/quic-core"))
   .settings(minSettings *)
+  .settings(
+    libraryDependencies ++= Seq(
+      Libraries.kwik,
+      Libraries.log4catsSl4j,
+      Libraries.slf4j,
+      Libraries.scalaLogging,
+      Libraries.logbackClassic % Test
+    )
+  )
 
 lazy val distTarGz = taskKey[File]("Package fat JAR and scripts into a tar.gz")
 
 lazy val `jam4s-quic-cli` = (project in file("modules/quic-cli"))
   .settings(minSettings *)
-  .settings(libraryDependencies ++= Seq(Libraries.decline, Libraries.declineEffect))
+  .settings(
+    libraryDependencies ++= Seq(
+      Libraries.decline,
+      Libraries.declineEffect,
+      Libraries.logbackClassic
+    )
+  )
   // Assembly settings
   .settings(
-    assembly / mainClass       := Some("org.jam4s.cli.Main"),
+    assembly / mainClass       := Some("org.jam4s.quic.cli.Main"),
     assembly / assemblyJarName := s"${name.value}-${version.value}.jar",
     assembly / assemblyMergeStrategy := {
       case PathList("META-INF", "MANIFEST.MF") =>
