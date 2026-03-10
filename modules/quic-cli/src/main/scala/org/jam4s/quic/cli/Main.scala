@@ -1,4 +1,4 @@
-package org.jam4s.cli
+package org.jam4s.quic.cli
 
 import cats.effect.{ExitCode, IO}
 import cats.syntax.all.*
@@ -10,8 +10,8 @@ import scala.concurrent.duration.*
 
 object Main
     extends CommandIOApp(
-      name = "jam4s-minimal-template",
-      header = "JAM4S Minimal Template CLI"
+      name = "jam4s-quic",
+      header = "JAM4S QUIC CLI"
     ):
 
   override def main: Opts[IO[ExitCode]] =

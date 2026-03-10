@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-jam4s-minimal-template is the minimal scala 3 template project.
+jam4s-quic is the JAM4S QUIC project.
 
 ## Build Commands
 
@@ -31,8 +31,8 @@ Requires JDK 21.
 
 Multi-module sbt build with two modules:
 
-- **`jam4s-minimal-template-core`** (`modules/minimal-template-core/`) — Core with Cats Effect for effects and FS2 for streaming.
-- **`jam4s-minimal-template-cli`** (`modules/minimal-template-cli/`) — CLI application (entry point: `org.jam4s.cli.Main`). Depends on core. Packaged as a fat JAR via sbt-assembly, bundled with shell scripts into a `.tar.gz` via the `distTarGz` task.
+- **`jam4s-quic-core`** (`modules/quic-core/`) — Core with Cats Effect for effects and FS2 for streaming.
+- **`jam4s-quic-cli`** (`modules/quic-cli/`) — CLI application (entry point: `org.jam4s.cli.Main`). Depends on core. Packaged as a fat JAR via sbt-assembly, bundled with shell scripts into a `.tar.gz` via the `distTarGz` task.
 
 Dependencies are defined in `project/Dependencies.scala`.
 

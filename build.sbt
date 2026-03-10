@@ -20,11 +20,11 @@ ThisBuild / parallelExecution := false
 // Publishing settings
 ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
-ThisBuild / homepage := Some(url("https://github.com/jam4scala/jam4s-minimal-template"))
+ThisBuild / homepage := Some(url("https://github.com/jam4scala/jam4s-quic"))
 ThisBuild / scmInfo := Some(
   ScmInfo(
-    url("https://github.com/jam4scala/jam4s-minimal-template"),
-    "scm:git:git@github.com:jam4scala/jam4s-minimal-template.git"
+    url("https://github.com/jam4scala/jam4s-quic"),
+    "scm:git:git@github.com:jam4scala/jam4s-quic.git"
   )
 )
 ThisBuild / developers := List(
@@ -49,9 +49,9 @@ Global / semanticdbEnabled    := true // for metals
 
 def jam4sLogo(scalaVersion: String, project: String) =
   s"""
-     |${scala.Console.YELLOW}░▀▀█░█▀█░█▄█░█░█░█▀▀░░░█▄█░█▀▀░█▀▀░█▀▀░█▀█░█▀▀░▀█▀░█▀█░█▀▀░
-     |${scala.Console.RED}░░░█░█▀█░█░█░░▀█░▀▀█░░░█░█░█▀▀░▀▀█░▀▀█░█▀█░█░█░░█░░█░█░█░█░
-     |${scala.Console.CYAN}░▀▀░░▀░▀░▀░▀░░░▀░▀▀▀░░░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░
+     |${scala.Console.YELLOW}░▀▀█░█▀█░█▄█░█░█░█▀▀░░░█▀█░█░█░▀█▀░█▀▀░
+     |${scala.Console.RED}░░░█░█▀█░█░█░░▀█░▀▀█░░░█░█░█░█░░█░░█░░░
+     |${scala.Console.CYAN}░▀▀░░▀░▀░▀░▀░░░▀░▀▀▀░░░▀▀█░▀▀▀░▀▀▀░▀▀▀░
      |
      |Powered by ${scala.Console.YELLOW}Scala $scalaVersion${scala.Console.RESET}
      |
@@ -93,22 +93,22 @@ val minSettings = List(
 
 lazy val root = (project in file("."))
   .settings(
-    name := "jam4s-minimal-template"
+    name := "jam4s-quic"
   )
   .aggregate(
-    `jam4s-minimal-template-core`,
-    `jam4s-minimal-template-cli`
+    `jam4s-quic-core`,
+    `jam4s-quic-cli`
   )
   .settings(
     publish / skip := true
   )
 
-lazy val `jam4s-minimal-template-core` = (project in file("modules/minimal-template-core"))
+lazy val `jam4s-quic-core` = (project in file("modules/quic-core"))
   .settings(minSettings *)
 
 lazy val distTarGz = taskKey[File]("Package fat JAR and scripts into a tar.gz")
 
-lazy val `jam4s-minimal-template-cli` = (project in file("modules/minimal-template-cli"))
+lazy val `jam4s-quic-cli` = (project in file("modules/quic-cli"))
   .settings(minSettings *)
   .settings(libraryDependencies ++= Seq(Libraries.decline, Libraries.declineEffect))
   // Assembly settings
@@ -158,11 +158,11 @@ lazy val `jam4s-minimal-template-cli` = (project in file("modules/minimal-templa
         MergeStrategy.first
     },
     // Create TAR.GZ archive after assembly
-    distTarGz := distTarGzTask("jam4s-minimal-template-cli").value
+    distTarGz := distTarGzTask("jam4s-quic-cli").value
   )
   // publishing settings
   .settings(
-    name := "jam4s-minimal-template-cli",
+    name := "jam4s-quic-cli",
 
     // Replace default jar with assembly
     Compile / packageBin := (Compile / assembly).value,
@@ -171,9 +171,9 @@ lazy val `jam4s-minimal-template-cli` = (project in file("modules/minimal-templa
     publish := publish.dependsOn(distTarGz).value,
 
     // Publish distTarGz as an additional artifact (classifier "bin")
-    addArtifact(Artifact("jam4s-minimal-template-cli", "tar.gz", "tar.gz", "bin"), distTarGz)
+    addArtifact(Artifact("jam4s-quic-cli", "tar.gz", "tar.gz", "bin"), distTarGz)
   )
-  .dependsOn(`jam4s-minimal-template-core` % "compile->compile")
+  .dependsOn(`jam4s-quic-core` % "compile->compile")
 
 // Some legacy libaries requires deep reflective access to low-level API on JDK 21+
 val unnamedJvmFlags = Seq(

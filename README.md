@@ -1,5 +1,5 @@
 ![logo](doc/img/jam4s-logo.png)
 
-# jam4s-minimal-template
+# jam4s-quic
 
-JAM4S Minimal Template
+JAM4S QUIC
