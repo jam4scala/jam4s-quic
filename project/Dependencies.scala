@@ -3,6 +3,7 @@ import sbt.*
 object Dependencies {
 
   object V {
+    val kwik         = "0.9"
     val cats         = "2.13.0"
     val catsEffect   = "3.6.3"
     val fs2          = "3.12.2"
@@ -16,10 +17,11 @@ object Dependencies {
   }
 
   object Libraries {
-    val cats           = "org.typelevel" %% "cats-core"       % V.cats
-    val catsEffect     = "org.typelevel" %% "cats-effect"     % V.catsEffect
-    val fs2Core        = "co.fs2"        %% "fs2-core"        % V.fs2
-    val fs2io          = "co.fs2"        %% "fs2-io"          % V.fs2
+    val kwik       = "tech.kwik"      % "kwik"        % V.kwik
+    val cats       = "org.typelevel" %% "cats-core"   % V.cats
+    val catsEffect = "org.typelevel" %% "cats-effect" % V.catsEffect
+    val fs2Core    = "co.fs2"        %% "fs2-core"    % V.fs2
+    val fs2io      = "co.fs2"        %% "fs2-io"      % V.fs2
 
     // Runtime
     val decline        = "com.monovore"               %% "decline"         % V.decline
