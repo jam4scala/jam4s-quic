@@ -13,8 +13,9 @@ object Dependencies {
     val scalaLogging = "3.9.6"
     val log4cats     = "2.7.0"
     val zerowaste    = "0.2.21"
-    val scalacheck   = "1.19.0"
-    val scalatest    = "3.2.19"
+    val scalacheck         = "1.19.0"
+    val scalatest          = "3.2.19"
+    val catsEffectTesting  = "1.6.0"
   }
 
   object Libraries {
@@ -33,8 +34,9 @@ object Dependencies {
     val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging"   % V.scalaLogging
 
     // test
-    val scalacheck = "org.scalacheck" %% "scalacheck" % V.scalacheck
-    val scalatest  = "org.scalatest"  %% "scalatest"  % V.scalatest
+    val scalacheck        = "org.scalacheck" %% "scalacheck"                    % V.scalacheck
+    val scalatest         = "org.scalatest"  %% "scalatest"                     % V.scalatest
+    val catsEffectTesting = "org.typelevel"  %% "cats-effect-testing-scalatest" % V.catsEffectTesting
   }
 
   object CompilerPlugins {

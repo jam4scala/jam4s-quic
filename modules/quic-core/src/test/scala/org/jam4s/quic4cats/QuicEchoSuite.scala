@@ -1,10 +1,12 @@
 package org.jam4s.quic4cats
 
+import cats.effect.IO
+import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.syntax.all.*
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
 
-class QuicEchoSuite extends AnyFunSuite with Matchers with QuicTestSupport:
+class QuicEchoSuite extends AsyncFunSuite with AsyncIOSpec with Matchers with QuicTestSupport:
 
   test("echo single message") {
     withEchoServerAndClient(9001) { conn =>

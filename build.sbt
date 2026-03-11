@@ -86,8 +86,9 @@ val minSettings = List(
     Libraries.slf4j          % Test,
     Libraries.scalaLogging   % Test,
     Libraries.logbackClassic % Test,
-    Libraries.scalacheck     % Test,
-    Libraries.scalatest      % Test
+    Libraries.scalacheck        % Test,
+    Libraries.scalatest         % Test,
+    Libraries.catsEffectTesting % Test
   )
 )
 

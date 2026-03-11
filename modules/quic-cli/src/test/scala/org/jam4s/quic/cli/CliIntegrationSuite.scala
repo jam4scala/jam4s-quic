@@ -1,16 +1,17 @@
 package org.jam4s.quic.cli
 
+import cats.effect.IO
+import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.syntax.all.*
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
 import org.jam4s.quic4cats.*
 
-class CliIntegrationSuite extends AnyFunSuite with Matchers with QuicTestSupport:
+class CliIntegrationSuite extends AsyncFunSuite with AsyncIOSpec with Matchers with QuicTestSupport:
 
   test("client sends messages and receives echo responses") {
     val messages = List("UP-0", "CE-128")
-
-    val result = withEchoServerAndClient(9010) { conn =>
+    withEchoServerAndClient(9010) { conn =>
       messages.traverse { msg =>
         for
           stream   <- conn.stream()
@@ -19,15 +20,12 @@ class CliIntegrationSuite extends AnyFunSuite with Matchers with QuicTestSupport
           response <- stream.read
         yield String(response)
       }
-    }
-
-    result shouldBe messages
+    }.asserting(_ shouldBe List("UP-0", "CE-128"))
   }
 
   test("client with custom messages echoes them back") {
     val messages = List("jam4s", "quic", "test")
-
-    val result = withEchoServerAndClient(9011) { conn =>
+    withEchoServerAndClient(9011) { conn =>
       messages.traverse { msg =>
         for
           stream   <- conn.stream()
@@ -36,7 +34,5 @@ class CliIntegrationSuite extends AnyFunSuite with Matchers with QuicTestSupport
           response <- stream.read
         yield String(response)
       }
-    }
-
-    result shouldBe messages
+    }.asserting(_ shouldBe messages)
   }
