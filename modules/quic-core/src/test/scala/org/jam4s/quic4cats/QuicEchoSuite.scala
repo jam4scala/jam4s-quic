@@ -4,12 +4,17 @@ import java.net.URI
 import java.security.KeyStore
 
 import cats.effect.IO
+import cats.effect.std.Dispatcher
 import cats.effect.unsafe.implicits.global
 import cats.syntax.all.*
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
 class QuicEchoSuite extends AnyFunSuite with Matchers:
+
+  private given Logger[IO] = Slf4jLogger.getLogger[IO]
 
   private val protocol = "jam"
   private val alias    = "selfsigned"
@@ -31,9 +36,10 @@ class QuicEchoSuite extends AnyFunSuite with Matchers:
       yield ()
 
   private def withEchoServerAndClient[A](port: Int)(f: QConnectionF[IO] => IO[A]): A =
-    val params  = QServerParams(port, protocol, keystore, alias, password)
-    val factory = QProtocolConnectionFactoryF(echoHandler)
+    val params = QServerParams(port, protocol, keystore, alias, password)
     (for
+      dispatcher <- Dispatcher.parallel[IO]
+      factory = QProtocolConnectionFactoryF[IO](echoHandler, dispatcher)
       _ <- MkQServer[IO].newServer(params, factory)
       c <- MkQClient[IO].newClient(URI(s"https://localhost:$port"), protocol)
     yield c)

@@ -4,6 +4,7 @@ import java.net.URI
 import java.nio.file.Path
 
 import cats.effect.{ ExitCode, IO }
+import cats.effect.std.Dispatcher
 import cats.syntax.all.*
 import com.monovore.decline.*
 import com.monovore.decline.effect.CommandIOApp
@@ -69,9 +70,11 @@ object Main
               _     <- stream.closeOutput
             yield ()
 
-        val factory = QProtocolConnectionFactoryF(echoHandler)
-        MkQServer[IO]
-          .newServer(params, factory)
+        (for
+          dispatcher <- Dispatcher.parallel[IO]
+          factory = QProtocolConnectionFactoryF[IO](echoHandler, dispatcher)
+          _ <- MkQServer[IO].newServer(params, factory)
+        yield ())
           .use { _ =>
             Logger[IO].info(s"Echo server started on port ${cfg.port} (protocol: ${cfg.protocol})") *> IO.never
           }
