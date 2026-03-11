@@ -1,4 +1,4 @@
-package org.jam4s.quic4cats
+package org.jam4s.quic.core
 
 import cats.effect.kernel.Async
 import net.luminis.quic.QuicConnection
@@ -6,7 +6,7 @@ import net.luminis.quic.QuicConnection
 trait QConnection[F[_]]:
   def stream(bidirectional: Boolean = true): F[QStream[F]]
 
-final class QConnectionF[F[_]: Async] private[quic4cats] (val underlying: QuicConnection)
+final class QConnectionF[F[_]: Async] private[core] (val underlying: QuicConnection)
     extends QConnection[F]:
 
   def stream(bidirectional: Boolean = true): F[QStream[F]] =

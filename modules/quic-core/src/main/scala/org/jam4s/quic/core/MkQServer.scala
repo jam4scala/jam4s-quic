@@ -1,4 +1,4 @@
-package org.jam4s.quic4cats
+package org.jam4s.quic.core
 
 import java.io.FileInputStream
 import java.net.DatagramSocket

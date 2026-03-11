@@ -10,7 +10,7 @@ import com.monovore.decline.*
 import com.monovore.decline.effect.CommandIOApp
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import org.jam4s.quic4cats.*
+import org.jam4s.quic.core.*
 
 object Main
     extends CommandIOApp(

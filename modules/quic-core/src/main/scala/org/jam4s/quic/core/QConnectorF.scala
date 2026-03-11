@@ -1,4 +1,4 @@
-package org.jam4s.quic4cats
+package org.jam4s.quic.core
 
 import cats.effect.kernel.Sync
 import net.luminis.quic.server.ServerConnector

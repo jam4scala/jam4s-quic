@@ -1,4 +1,4 @@
-package org.jam4s.quic4cats
+package org.jam4s.quic.core
 
 import java.net.URI
 import java.security.KeyStore
@@ -34,7 +34,7 @@ object MkQClient:
             .uri(uri)
             .applicationProtocol(protocol)
             .logger(log)
-          trustStore match
+          val _ = trustStore match
             case Some(ts) => builder.customTrustStore(ts)
             case None     => builder.noServerCertificateCheck()
           val conn = builder.build()

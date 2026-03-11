@@ -1,4 +1,4 @@
-package org.jam4s.quic4cats
+package org.jam4s.quic.core
 
 import net.luminis.quic.log.{ Logger as QLogger, SysOutLogger }
 

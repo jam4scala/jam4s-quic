@@ -5,7 +5,7 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.syntax.all.*
 import org.scalatest.funsuite.AsyncFunSuite
 import org.scalatest.matchers.should.Matchers
-import org.jam4s.quic4cats.*
+import org.jam4s.quic.core.*
 
 class CliIntegrationSuite extends AsyncFunSuite with AsyncIOSpec with Matchers with QuicTestSupport:
 

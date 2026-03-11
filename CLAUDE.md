@@ -30,8 +30,8 @@ sbt coverage                # clean → coverage → test → coverageReport
 
 Run echo demos (from quic-core test sources):
 ```bash
-sbt "jam4s-quic-core/Test/runMain org.jam4s.quic4cats.EchoServerRun"
-sbt "jam4s-quic-core/Test/runMain org.jam4s.quic4cats.EchoClientRun"
+sbt "jam4s-quic-core/Test/runMain org.jam4s.quic.core.EchoServerRun"
+sbt "jam4s-quic-core/Test/runMain org.jam4s.quic.core.EchoClientRun"
 ```
 
 ## Architecture
@@ -40,7 +40,7 @@ Multi-module sbt build:
 
 - **`jam4s-quic-core`** (`modules/quic-core/`) — Two-layer design:
   - `org.jam4s.quic` — Synchronous core: direct wrappers around KWIK's Java API (`QClient`, `QServer`, `QProtocolConnection`)
-  - `org.jam4s.quic4cats` — Functional API: Cats Effect wrappers with `Resource`-based lifecycle, typeclass factories (`MkQClient`, `MkQServer`), log4cats logging
+  - `org.jam4s.quic.core` — Functional API: Cats Effect wrappers with `Resource`-based lifecycle, typeclass factories (`MkQClient`, `MkQServer`), log4cats logging
 - **`jam4s-quic-cli`** (`modules/quic-cli/`) — CLI application using Decline (entry point: `org.jam4s.cli.Main`). Packaged as a fat JAR via sbt-assembly, bundled with shell scripts into a `.tar.gz` via the `distTarGz` task.
 
 Dependencies are defined in `project/Dependencies.scala`. Key deps: Cats Effect, FS2, KWIK, Decline.

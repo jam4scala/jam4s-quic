@@ -28,29 +28,22 @@ jam4s-quic
 │   └── X509_certificate.cer
 ├──modules/quic-core/
 │  └── src/
-│      ├── main/scala/org/jam4s/
-│      │   ├── quic/                      # Synchronous core layer
-│      │   │   ├── QClient.scala
-│      │   │   ├── QServer.scala
-│      │   │   ├── QServerOps.scala
-│      │   │   ├── QProtocolConnection.scala
-│      │   │   └── QProtocolConnectionFactory.scala
-│      │   └── quic4cats/                 # Cats Effect functional layer
-│      │       ├── QStreamF.scala
-│      │       ├── QConnectionF.scala
-│      │       ├── QConnectorF.scala
-│      │       ├── QProtocolConnectionF.scala
-│      │       ├── QProtocolConnectionFactoryF.scala
-│      │       ├── MkQClient.scala
-│      │       └── MkQServer.scala
-│      └── test/scala/org/jam4s/quic4cats/
+│      ├── main/scala/org/jam4s/quic/core                 # Cats Effect functional layer
+│      │   ├── QStreamF.scala
+│      │   ├── QConnectionF.scala
+│      │   ├── QConnectorF.scala
+│      │   ├── QProtocolConnectionF.scala
+│      │   ├── QProtocolConnectionFactoryF.scala
+│      │   ├── MkQClient.scala
+│      │   └── MkQServer.scala
+│      └── test/scala/org/jam4s/quic.core/
 │          ├── EchoServerRun.scala        # Echo server demo
 │          └── EchoClientRun.scala        # Echo client demo
 ├──modules/quic-cli/
    └── src/
        ├── main/scala/org/jam4s/quic
-       │   ├── cli/                       # CLI
-       │   │   ├── Main.scala
+       │   └── cli/                       # CLI
+       │       └── Main.scala
        └── test/scala/org/jam4s/quic/cli
 ```
 
@@ -62,7 +55,7 @@ The module is organized into two layers:
 
 Direct wrappers around KWIK's Java API using `scala.concurrent.Future` for async stream handling. Suitable for standalone testing and debugging.
 
-### Layer 2: Functional API (`org.jam4s.quic4cats`)
+### Layer 2: Functional API (`org.jam4s.quic.core`)
 
 Effect-based wrappers using Cats Effect (`F[_]: Async`), providing:
 - Resource-safe lifecycle management via `Resource[F, _]`
@@ -196,7 +189,7 @@ trait MkQServer[F[_]]:
 ### Logging
 
 - KWIK logger: `SysOutLogger` with long time format, info + warning enabled
-- Application logger: log4cats `Slf4jLogger` (in quic4cats layer)
+- Application logger: log4cats `Slf4jLogger` (in quic.core layer)
 - Scala logging: `StrictLogging` (in synchronous layer)
 
 ## TLS Certificate Setup
@@ -260,6 +253,6 @@ MkQClient[IO] → QConnectionF[IO] → QStreamF[IO] → JamnpClient
 
 Run with:
 ```
-sbt "quic/Test/runMain org.jam4s.quic4cats.EchoServerRun"
-sbt "quic/Test/runMain org.jam4s.quic4cats.EchoClientRun"
+sbt "quic/Test/runMain org.jam4s.quic.core.EchoServerRun"
+sbt "quic/Test/runMain org.jam4s.quic.core.EchoClientRun"
 ```

@@ -1,7 +1,7 @@
-package org.jam4s.quic4cats
+package org.jam4s.quic.core
 
-import cats.effect.{ IO, IOApp }
 import cats.effect.std.Dispatcher
+import cats.effect.{ IO, IOApp }
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
