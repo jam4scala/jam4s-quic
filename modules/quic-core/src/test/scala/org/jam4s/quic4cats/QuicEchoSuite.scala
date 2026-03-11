@@ -27,6 +27,7 @@ class QuicEchoSuite extends AnyFunSuite with Matchers:
       for
         bytes <- stream.read
         _     <- stream.write(bytes)
+        _     <- stream.closeOutput
       yield ()
 
   private def withEchoServerAndClient[A](port: Int)(f: QConnectionF[IO] => IO[A]): A =
@@ -44,6 +45,7 @@ class QuicEchoSuite extends AnyFunSuite with Matchers:
       for
         stream   <- conn.stream()
         _        <- stream.write("hello".getBytes)
+        _        <- stream.closeOutput
         response <- stream.read
       yield String(response) shouldBe "hello"
     }
@@ -56,6 +58,7 @@ class QuicEchoSuite extends AnyFunSuite with Matchers:
         for
           stream   <- conn.stream()
           _        <- stream.write(msg.getBytes)
+          _        <- stream.closeOutput
           response <- stream.read
         yield String(response) shouldBe msg
       }
@@ -68,6 +71,7 @@ class QuicEchoSuite extends AnyFunSuite with Matchers:
       for
         stream   <- conn.stream()
         _        <- stream.write(data)
+        _        <- stream.closeOutput
         response <- stream.read
       yield response shouldBe data
     }
@@ -79,6 +83,7 @@ class QuicEchoSuite extends AnyFunSuite with Matchers:
       for
         stream   <- conn.stream()
         _        <- stream.write(data)
+        _        <- stream.closeOutput
         response <- stream.read
       yield response shouldBe data
     }

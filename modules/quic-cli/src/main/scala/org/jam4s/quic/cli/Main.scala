@@ -66,6 +66,7 @@ object Main
               bytes <- stream.read
               _     <- Logger[IO].info(s"Received ${bytes.length} bytes: ${String(bytes)}")
               _     <- stream.write(bytes)
+              _     <- stream.closeOutput
             yield ()
 
         val factory = QProtocolConnectionFactoryF(echoHandler)
@@ -88,6 +89,7 @@ object Main
             stream   <- conn.stream()
             _        <- Logger[IO].info(s"Sending: $msg")
             _        <- stream.write(msg.getBytes)
+            _        <- stream.closeOutput
             response <- stream.read
             _        <- Logger[IO].info(s"Received: ${String(response)}")
           yield ()

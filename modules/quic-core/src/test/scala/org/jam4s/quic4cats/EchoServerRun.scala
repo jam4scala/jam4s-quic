@@ -14,6 +14,7 @@ object EchoServerRun extends IOApp.Simple:
         bytes <- stream.read
         _     <- Logger[IO].info(s"Echo server received: ${String(bytes)}")
         _     <- stream.write(bytes)
+        _     <- stream.closeOutput
       yield ()
 
   def run: IO[Unit] =

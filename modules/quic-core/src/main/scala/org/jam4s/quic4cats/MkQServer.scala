@@ -66,4 +66,4 @@ object MkQServer:
           connector.start()
           QConnectorF[F](connector)
         }
-      )(_ => Async[F].unit)
+      )(_ => Async[F].unit) // ServerConnector has no close/stop API in KWIK v0.9

@@ -22,6 +22,7 @@ object EchoClientRun extends IOApp.Simple:
             stream   <- conn.stream()
             _        <- Logger[IO].info(s"Sending: $msg")
             _        <- stream.write(msg.getBytes)
+            _        <- stream.closeOutput
             response <- stream.read
             _        <- Logger[IO].info(s"Received: ${String(response)}")
           yield ()

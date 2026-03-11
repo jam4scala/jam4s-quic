@@ -6,6 +6,7 @@ import net.luminis.quic.QuicStream
 trait QStream[F[_]]:
   def read: F[Array[Byte]]
   def write(bytes: Array[Byte]): F[Unit]
+  def closeOutput: F[Unit]
 
 final class QStreamF[F[_]: Sync](underlying: QuicStream) extends QStream[F]:
 
@@ -16,7 +17,10 @@ final class QStreamF[F[_]: Sync](underlying: QuicStream) extends QStream[F]:
 
   def write(bytes: Array[Byte]): F[Unit] =
     Sync[F].blocking {
-      val os = underlying.getOutputStream
-      os.write(bytes)
-      os.close()
+      underlying.getOutputStream.write(bytes)
+    }
+
+  def closeOutput: F[Unit] =
+    Sync[F].blocking {
+      underlying.getOutputStream.close()
     }

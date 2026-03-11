@@ -28,6 +28,7 @@ class CliIntegrationSuite extends AnyFunSuite with Matchers:
       for
         bytes <- stream.read
         _     <- stream.write(bytes)
+        _     <- stream.closeOutput
       yield ()
 
   test("client sends messages and receives echo responses") {
@@ -46,6 +47,7 @@ class CliIntegrationSuite extends AnyFunSuite with Matchers:
           for
             stream   <- conn.stream()
             _        <- stream.write(msg.getBytes)
+            _        <- stream.closeOutput
             response <- stream.read
           yield String(response)
         }
@@ -71,6 +73,7 @@ class CliIntegrationSuite extends AnyFunSuite with Matchers:
           for
             stream   <- conn.stream()
             _        <- stream.write(msg.getBytes)
+            _        <- stream.closeOutput
             response <- stream.read
           yield String(response)
         }
