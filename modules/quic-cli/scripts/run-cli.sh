@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-JAR_PATH="$SCRIPT_DIR/jam4s-minimal-template-cli.jar"
+JAR_PATH="$SCRIPT_DIR/jam4s-quic-cli.jar"
 
 if [[ ! -f "$JAR_PATH" ]]; then
   echo "Fat JAR not found at $JAR_PATH" >&2
