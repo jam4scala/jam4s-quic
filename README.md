@@ -79,6 +79,10 @@ keytool -genkey -keyalg RSA -alias selfsigned \
   -validity 360 -keysize 2048 -dname "CN=localhost" -noprompt
 ```
 
+## Known Limitations
+
+- **Server shutdown:** KWIK v0.9's `ServerConnector` interface does not expose a `close()` or `stop()` method, so the `MkQServer` `Resource` release is a no-op. Server sockets are not explicitly cleaned up on shutdown.
+
 ## License
 
 [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
