@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `quic` module provides QUIC transport networking for the JAM4S project. It wraps the [KWIK](https://github.com/ptrd/kwik) library (v0.9) — a Java/Kotlin QUIC implementation — and exposes both a low-level synchronous API and a high-level functional API built on Cats Effect.
+The `quic` module provides QUIC transport networking for the JAM4S project. It wraps the [KWIK](https://github.com/ptrd/kwik) library (v0.9) — a Java/Kotlin QUIC implementation — and exposes a functional API built on Cats Effect.
 
 The module registers a custom application protocol (`"jam"`) via ALPN and handles bidirectional streams for JAM node-to-node and client-to-node communication.
 
@@ -19,63 +19,65 @@ kwik ──► jam4s-quic-core ──► jam4s-quic-cli
 ```
 jam4s-quic
 ├── SPEC.md
-├── README.md
+├── CLAUDE.md
 ├── cert/                              # TLS certificates and keystores
-│   ├── keystore.jks
-│   ├── keystore.p12
-│   ├── cert.pem
-│   ├── key.pem
-│   └── X509_certificate.cer
-├──modules/quic-core/
-│  └── src/
-│      ├── main/scala/org/jam4s/quic/core                 # Cats Effect functional layer
-│      │   ├── QStreamF.scala
-│      │   ├── QConnectionF.scala
-│      │   ├── QConnectorF.scala
-│      │   ├── QProtocolConnectionF.scala
-│      │   ├── QProtocolConnectionFactoryF.scala
-│      │   ├── MkQClient.scala
-│      │   └── MkQServer.scala
-│      └── test/scala/org/jam4s/quic.core/
-│          ├── EchoServerRun.scala        # Echo server demo
-│          └── EchoClientRun.scala        # Echo client demo
-├──modules/quic-cli/
-   └── src/
-       ├── main/scala/org/jam4s/quic
-       │   └── cli/                       # CLI
-       │       └── Main.scala
-       └── test/scala/org/jam4s/quic/cli
+│   └── keystore.jks
+├── modules/quic-core/
+│   └── src/
+│       ├── main/scala/org/jam4s/quic/core/
+│       │   ├── QStreamF.scala
+│       │   ├── QConnectionF.scala
+│       │   ├── QConnectorF.scala
+│       │   ├── QDefaults.scala
+│       │   ├── QStreamHandler.scala
+│       │   ├── QProtocolConnectionF.scala
+│       │   ├── QProtocolConnectionFactoryF.scala
+│       │   ├── MkQClient.scala
+│       │   └── MkQServer.scala
+│       └── test/
+│           ├── scala/org/jam4s/quic/core/
+│           │   ├── EchoServerRun.scala
+│           │   ├── EchoClientRun.scala
+│           │   ├── QuicEchoSuite.scala
+│           │   └── QuicTestSupport.scala
+│           └── resources/keystore.jks
+└── modules/quic-cli/
+    └── src/
+        ├── main/scala/org/jam4s/quic/cli/
+        │   └── Main.scala
+        ├── test/
+        │   ├── scala/org/jam4s/quic/cli/
+        │   │   ├── CliIntegrationSuite.scala
+        │   │   └── CliParseSuite.scala
+        │   └── resources/keystore.jks
+        └── scripts/                   # Shell scripts for distribution
 ```
 
 ## Architecture
 
-The module is organized into two layers:
-
-### Layer 1: Synchronous Core (`org.jam4s.quic`)
-
-Direct wrappers around KWIK's Java API using `scala.concurrent.Future` for async stream handling. Suitable for standalone testing and debugging.
-
-### Layer 2: Functional API (`org.jam4s.quic.core`)
-
-Effect-based wrappers using Cats Effect (`F[_]: Async`), providing:
+The module provides a functional API (`org.jam4s.quic.core`) built on Cats Effect (`F[_]: Async`), providing:
 - Resource-safe lifecycle management via `Resource[F, _]`
 - Typeclass-based factories (`MkQClient`, `MkQServer`)
-- Blocking I/O properly wrapped with `Sync[F].blocking`
+- Blocking I/O properly wrapped with `Async[F].blocking`
+- Callback-to-effect bridging via `Dispatcher[F]`
 - Integration with log4cats for structured logging
 
-## Abstract Interfaces
+## Traits
 
-Defined in `modules/types` (`org.jam4s.types.quic`):
+Defined in `org.jam4s.quic.core`:
 
 ```scala
 trait QStream[F[_]]:
   def read: F[Array[Byte]]
+  def readTimeout(timeout: FiniteDuration): F[Array[Byte]]
   def write(bytes: Array[Byte]): F[Unit]
+  def closeOutput: F[Unit]
 
 trait QConnection[F[_]]:
   def stream(bidirectional: Boolean = true): F[QStream[F]]
 
 trait QConnector[F[_]]:
+  def port: Int
   def start: F[Unit]
 
 trait QStreamHandler[F[_]]:
@@ -91,7 +93,9 @@ Wraps `net.luminis.quic.QuicStream`. Implements `QStream[F]`.
 | Method | Behavior |
 |--------|----------|
 | `read` | Blocking read of all bytes from the stream's `InputStream` |
-| `write(bytes)` | Blocking write to the stream's `OutputStream`, then closes it |
+| `readTimeout(timeout)` | `read` with a `FiniteDuration` timeout |
+| `write(bytes)` | Blocking write to the stream's `OutputStream` |
+| `closeOutput` | Blocking close of the stream's `OutputStream` |
 
 ### QConnectionF
 
@@ -107,17 +111,18 @@ Wraps `net.luminis.quic.server.ServerConnector`. Implements `QConnector[F]`.
 
 | Method | Behavior |
 |--------|----------|
+| `port` | Returns the actual bound port (may differ from requested port when using port 0) |
 | `start` | Blocking call to start the QUIC server connector |
 
 ### QProtocolConnectionF
 
-Implements KWIK's `ApplicationProtocolConnection`. Bridges the callback-based KWIK API to the Cats Effect world.
+Implements KWIK's `ApplicationProtocolConnection`. Bridges the callback-based KWIK API to the Cats Effect world using `Dispatcher[F]`.
 
 | Method | Behavior |
 |--------|----------|
-| `acceptPeerInitiatedStream(stream)` | Wraps incoming `QuicStream` in `QStreamF[IO]`, passes to `QStreamHandler[IO]`, runs via `unsafeRunAsync` |
+| `acceptPeerInitiatedStream(stream)` | Wraps incoming `QuicStream` in `QStreamF[F]`, dispatches to `QStreamHandler[F]` via `dispatcher.unsafeRunAndForget` |
 
-Error handling: logs warnings via `Logger[IO]` on failure.
+Error handling: logs warnings via `Logger[F].warn` on failure.
 
 ### QProtocolConnectionFactoryF
 
@@ -125,8 +130,19 @@ Implements KWIK's `ApplicationProtocolConnectionFactory`. Creates `QProtocolConn
 
 | Config | Value |
 |--------|-------|
-| `maxTotalPeerInitiatedBidirectionalStreams` | `0` (unlimited) |
+| `maxTotalPeerInitiatedBidirectionalStreams` | `12` |
 | `maxConcurrentPeerInitiatedBidirectionalStreams` | `Int.MaxValue` |
+
+### QDefaults
+
+Provides default KWIK logger configuration.
+
+```scala
+object QDefaults:
+  def logger(): QLogger
+```
+
+Returns a `SysOutLogger` with long time format, info + warning enabled.
 
 ### MkQClient
 
@@ -137,14 +153,15 @@ trait MkQClient[F[_]]:
   def newClient(
     uri: URI,
     protocol: String,
-    log: QLogger = defaultLogger()
+    trustStore: Option[KeyStore] = None,
+    log: QLogger = QDefaults.logger()
   ): Resource[F, QConnectionF[F]]
 ```
 
 - **Acquire:** Creates `QuicClientConnection` via builder (blocking), connects to server
 - **Release:** Calls `closeAndWait()` on connection
-- **TLS:** No server certificate validation (development mode)
-- **Implicit instance:** Available for any `F[_]: Async`
+- **TLS:** When `trustStore` is `None`, server certificate validation is disabled (development mode). When provided, uses the given `KeyStore` for validation.
+- **Given instance:** Available for any `F[_]: Async`
 
 ### MkQServer
 
@@ -163,14 +180,41 @@ trait MkQServer[F[_]]:
   def newServer(
     params: QServerParams,
     factory: ApplicationProtocolConnectionFactory,
-    log: QLogger = defaultLogger()
+    log: QLogger = QDefaults.logger()
   ): Resource[F, QConnectorF[F]]
 ```
 
-- **Acquire:** Creates `ServerConnector`, registers protocol factory, starts server (blocking)
-- **Release:** No-op
+- **Acquire:** Creates `DatagramSocket(port)` to bind port (port `0` lets the OS assign a random available port), builds `ServerConnector`, registers protocol factory, starts server
+- **Release:** No-op (KWIK v0.9 lacks close API)
 - **Helper:** `QServerParams.apply(port, protocol, jksPath, alias, password)` loads a JKS keystore from file
-- **Implicit instance:** Available for any `F[_]: Async`
+- **Given instance:** Available for any `F[_]: Async`
+
+## CLI Application
+
+Entry point: `org.jam4s.quic.cli.Main` (Decline `CommandApp`). Packaged as a fat JAR via sbt-assembly, bundled with shell scripts into a `.tar.gz` via the `distTarGz` task.
+
+### Server Subcommand
+
+| Option | Short | Default | Description |
+|--------|-------|---------|-------------|
+| `--keystore` | `-k` | (required) | Path to JKS keystore |
+| `--port` | `-p` | `9000` | Port number |
+| `--protocol` | | `"jam"` | ALPN protocol |
+| `--alias` | | `"selfsigned"` | Keystore alias |
+| `--password` | | `"password"` | Keystore password |
+
+Starts an echo server that reads bytes from each incoming stream and echoes them back.
+
+### Client Subcommand
+
+| Option | Short | Default | Description |
+|--------|-------|---------|-------------|
+| `--host` | `-h` | `"localhost"` | Server host |
+| `--port` | `-p` | `9000` | Port number |
+| `--protocol` | | `"jam"` | ALPN protocol |
+| `--message` | `-m` | `"UP-0"`, `"CE-128"` | Messages to send (repeatable) |
+
+Connects to the server, sends each message on a separate stream, and logs responses.
 
 ## Configuration
 
@@ -183,18 +227,17 @@ trait MkQServer[F[_]]:
 | Keystore format | JKS |
 | Keystore alias | `"selfsigned"` |
 | Keystore password | `"password"` |
-| Max open peer-initiated bidirectional streams | `12` |
+| Max total peer-initiated bidirectional streams | `12` |
 | Max concurrent peer-initiated bidirectional streams | `Int.MaxValue` |
 
 ### Logging
 
-- KWIK logger: `SysOutLogger` with long time format, info + warning enabled
-- Application logger: log4cats `Slf4jLogger` (in quic.core layer)
-- Scala logging: `StrictLogging` (in synchronous layer)
+- KWIK logger: `SysOutLogger` with long time format, info + warning enabled (via `QDefaults.logger()`)
+- Application logger: log4cats `Slf4jLogger`
 
 ## TLS Certificate Setup
 
-Self-signed certificates are used for development. The `cert/` directory contains pre-generated files. To regenerate:
+Self-signed certificates are used for development. The `cert/` directory contains a pre-generated JKS keystore. Test copies exist in `modules/quic-core/src/test/resources/` and `modules/quic-cli/src/test/resources/`. To regenerate:
 
 1. Generate JKS keystore: `keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360 -keysize 2048`
 2. Export certificate: `keytool -export -alias selfsigned -keystore keystore.jks -rfc -file X509_certificate.cer`
@@ -211,7 +254,7 @@ Self-signed certificates are used for development. The `cert/` directory contain
 | Multiple concurrent streams | Supported (configurable limit) |
 | ALPN (Application-Layer Protocol Negotiation) | Supported (protocol: `"jam"`) |
 | TLS 1.3 encryption | Supported (via JKS keystore) |
-| Server certificate validation | Disabled (development mode) |
+| Server certificate validation | Optional (via `trustStore` parameter) |
 | Connection keep-alive | Supported (via KWIK) |
 | Connection close with wait | Supported (client-side) |
 
@@ -237,22 +280,36 @@ MkQClient[IO] → QConnectionF[IO] → QStreamF[IO] → JamnpClient
 
 | Layer | Strategy |
 |-------|----------|
-| Synchronous core | `Try`/`catch` with `println`, `Future.onComplete` callbacks |
-| Functional API | Effect error propagation, `onError` with `Logger[IO].warn`, `unsafeRunAsync` Left/Right handling |
-| Resource cleanup | `Resource` acquire/release pattern, `Using` for synchronous code |
+| Functional API | Effect error propagation, `onError` with `Logger[F].warn`, `Dispatcher` for callback bridging |
+| Resource cleanup | `Resource` acquire/release pattern |
 
-## Test / Demo Applications
+## Test Suite
 
-### EchoServerRun
+### QuicEchoSuite
 
-`IOApp.Simple` that starts a QUIC echo server on port 9000. Reads bytes from each incoming stream and echoes them back.
+Integration tests using `AsyncFunSuite` with `QuicTestSupport`:
+- Single message echo
+- Multiple messages on separate streams
+- Large payload (8192 bytes)
+- Binary data echo (all 256 byte values)
 
-### EchoClientRun
+### CliParseSuite
 
-`IOApp.Simple` that connects to `localhost:9000`, sends test messages (`"UP-0"`, `"CE-128"`), and logs responses.
+Parser validation:
+- Server subcommand requires `--keystore`, accepts all options
+- Client subcommand accepts all options including multiple `-m` flags
+- Top-level requires subcommand
 
-Run with:
+### CliIntegrationSuite
+
+End-to-end CLI command tests via echo server.
+
+### Demo Applications
+
+```bash
+sbt "jam4s-quic-core/Test/runMain org.jam4s.quic.core.EchoServerRun"
+sbt "jam4s-quic-core/Test/runMain org.jam4s.quic.core.EchoClientRun"
 ```
-sbt "quic/Test/runMain org.jam4s.quic.core.EchoServerRun"
-sbt "quic/Test/runMain org.jam4s.quic.core.EchoClientRun"
-```
+
+- **EchoServerRun:** `IOApp.Simple` starting echo server on port 9000
+- **EchoClientRun:** `IOApp.Simple` connecting to `localhost:9000`, sending `"UP-0"` and `"CE-128"`

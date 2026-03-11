@@ -25,8 +25,11 @@ kwik ──► jam4s-quic-core ──► jam4s-quic-cli
 ```bash
 sbt compile                 # Compile all modules
 sbt test                    # Run all tests
+sbt "testOnly *SuiteName"   # Run a single test suite
 sbt fmt                     # Format code (scalafmt)
+sbt fmtCheck                # Check formatting without changing files
 sbt lint                    # Format + organize imports
+sbt coverage                # clean → coverage → test → coverageReport
 sbt assembly                # Build fat JAR for CLI
 sbt distTarGz               # Package fat JAR + scripts into .tar.gz
 ```
@@ -69,9 +72,41 @@ jam4s-quic client -h 10.0.0.1 -p 8443
 | `--protocol` | | `jam` | ALPN protocol name |
 | `--message` | `-m` | `UP-0, CE-128` | Messages to send (repeatable) |
 
+## Quick API Example
+
+```scala
+import org.jam4s.quic.core.*
+
+// Client
+MkQClient[IO].newClient(URI("https://localhost:9000"), "jam").use { conn =>
+  for
+    stream   <- conn.stream()
+    _        <- stream.write("hello".getBytes)
+    _        <- stream.closeOutput
+    response <- stream.read
+  yield String(response)
+}
+
+// Server
+(for
+  dispatcher <- Dispatcher.parallel[IO]
+  factory = QProtocolConnectionFactoryF[IO](handler, dispatcher)
+  _       <- MkQServer[IO].newServer(params, factory)
+yield ()).useForever
+```
+
+## Echo Demos
+
+```bash
+sbt "jam4s-quic-core/Test/runMain org.jam4s.quic.core.EchoServerRun"
+sbt "jam4s-quic-core/Test/runMain org.jam4s.quic.core.EchoClientRun"
+```
+
 ## TLS Certificates
 
-Self-signed certificates for development are in `cert/`. To regenerate:
+Self-signed certificates for development are in `cert/`. By default, the client disables server certificate validation. Pass a `trustStore` to `MkQClient.newClient` to enable it.
+
+To regenerate:
 
 ```bash
 keytool -genkey -keyalg RSA -alias selfsigned \
@@ -81,7 +116,7 @@ keytool -genkey -keyalg RSA -alias selfsigned \
 
 ## Known Limitations
 
-- **Server shutdown:** KWIK v0.9's `ServerConnector` interface does not expose a `close()` or `stop()` method, so the `MkQServer` `Resource` release is a no-op. Server sockets are not explicitly cleaned up on shutdown.
+- **Server shutdown:** KWIK v0.9's `ServerConnector` does not expose a `close()`/`stop()` method, so the `MkQServer` `Resource` release is a no-op.
 
 ## License
 
