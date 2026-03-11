@@ -188,7 +188,7 @@ lazy val `jam4s-quic-cli` = (project in file("modules/quic-cli"))
     // Publish distTarGz as an additional artifact (classifier "bin")
     addArtifact(Artifact("jam4s-quic-cli", "tar.gz", "tar.gz", "bin"), distTarGz)
   )
-  .dependsOn(`jam4s-quic-core` % "compile->compile")
+  .dependsOn(`jam4s-quic-core` % "compile->compile;test->test")
 
 // Some legacy libaries requires deep reflective access to low-level API on JDK 21+
 val unnamedJvmFlags = Seq(
