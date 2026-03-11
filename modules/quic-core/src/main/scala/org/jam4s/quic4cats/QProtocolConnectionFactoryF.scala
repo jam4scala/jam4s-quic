@@ -11,7 +11,7 @@ final class QProtocolConnectionFactoryF[F[_]: Async: Logger](
     dispatcher: Dispatcher[F]
 ) extends ApplicationProtocolConnectionFactory:
 
-  override def maxTotalPeerInitiatedBidirectionalStreams(): Long = 0L
+  override def maxTotalPeerInitiatedBidirectionalStreams(): Long = 12L
 
   override def maxConcurrentPeerInitiatedBidirectionalStreams(): Int = Int.MaxValue
 
