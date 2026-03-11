@@ -11,7 +11,7 @@ class CliIntegrationSuite extends AsyncFunSuite with AsyncIOSpec with Matchers w
 
   test("client sends messages and receives echo responses") {
     val messages = List("UP-0", "CE-128")
-    withEchoServerAndClient(9010) { conn =>
+    withEchoServerAndClient { conn =>
       messages.traverse { msg =>
         for
           stream   <- conn.stream()
@@ -25,7 +25,7 @@ class CliIntegrationSuite extends AsyncFunSuite with AsyncIOSpec with Matchers w
 
   test("client with custom messages echoes them back") {
     val messages = List("jam4s", "quic", "test")
-    withEchoServerAndClient(9011) { conn =>
+    withEchoServerAndClient { conn =>
       messages.traverse { msg =>
         for
           stream   <- conn.stream()

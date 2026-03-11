@@ -1,6 +1,7 @@
 package org.jam4s.quic4cats
 
 import java.io.FileInputStream
+import java.net.DatagramSocket
 import java.security.KeyStore
 
 import cats.effect.Resource
@@ -56,14 +57,17 @@ object MkQServer:
     ): Resource[F, QConnectorF[F]] =
       Resource.make(
         Async[F].blocking {
+          val socket     = new DatagramSocket(params.port)
+          val actualPort = socket.getLocalPort
           val connector = ServerConnector
             .builder()
-            .withPort(params.port)
+            .withPort(actualPort)
+            .withSocket(socket)
             .withKeyStore(params.keystore, params.alias, params.password)
             .withLogger(log)
             .build()
           connector.registerApplicationProtocol(params.protocol, factory)
           connector.start()
-          QConnectorF[F](connector)
+          QConnectorF[F](connector, actualPort)
         }
       )(_ => Async[F].unit) // ServerConnector has no close/stop API in KWIK v0.9

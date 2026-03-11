@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 class QuicEchoSuite extends AsyncFunSuite with AsyncIOSpec with Matchers with QuicTestSupport:
 
   test("echo single message") {
-    withEchoServerAndClient(9001) { conn =>
+    withEchoServerAndClient { conn =>
       for
         stream   <- conn.stream()
         _        <- stream.write("hello".getBytes)
@@ -21,7 +21,7 @@ class QuicEchoSuite extends AsyncFunSuite with AsyncIOSpec with Matchers with Qu
 
   test("echo multiple messages on separate streams") {
     val messages = List("UP-0", "CE-128", "jam4s-quic")
-    withEchoServerAndClient(9002) { conn =>
+    withEchoServerAndClient { conn =>
       messages.traverse_ { msg =>
         for
           stream   <- conn.stream()
@@ -35,7 +35,7 @@ class QuicEchoSuite extends AsyncFunSuite with AsyncIOSpec with Matchers with Qu
 
   test("echo large payload") {
     val data = Array.tabulate[Byte](8192)(i => (i % 127).toByte)
-    withEchoServerAndClient(9003) { conn =>
+    withEchoServerAndClient { conn =>
       for
         stream   <- conn.stream()
         _        <- stream.write(data)
@@ -47,7 +47,7 @@ class QuicEchoSuite extends AsyncFunSuite with AsyncIOSpec with Matchers with Qu
 
   test("echo binary data") {
     val data = Array.tabulate[Byte](256)(_.toByte)
-    withEchoServerAndClient(9004) { conn =>
+    withEchoServerAndClient { conn =>
       for
         stream   <- conn.stream()
         _        <- stream.write(data)
