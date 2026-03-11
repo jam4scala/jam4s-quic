@@ -5,31 +5,24 @@ import java.net.URI
 import cats.effect.Resource
 import cats.effect.kernel.Async
 import net.luminis.quic.QuicClientConnection
-import net.luminis.quic.log.{ Logger as QLogger, SysOutLogger }
+import net.luminis.quic.log.Logger as QLogger
 
 trait MkQClient[F[_]]:
   def newClient(
       uri: URI,
       protocol: String,
-      log: QLogger = MkQClient.defaultLogger()
+      log: QLogger = QDefaults.logger()
   ): Resource[F, QConnectionF[F]]
 
 object MkQClient:
 
   def apply[F[_]](using ev: MkQClient[F]): MkQClient[F] = ev
 
-  def defaultLogger(): QLogger =
-    val logger = SysOutLogger()
-    logger.timeFormat(QLogger.TimeFormat.Long)
-    logger.logInfo(true)
-    logger.logWarning(true)
-    logger
-
   given [F[_]: Async]: MkQClient[F] with
     def newClient(
         uri: URI,
         protocol: String,
-        log: QLogger = defaultLogger()
+        log: QLogger = QDefaults.logger()
     ): Resource[F, QConnectionF[F]] =
       Resource.make(
         Async[F].blocking {

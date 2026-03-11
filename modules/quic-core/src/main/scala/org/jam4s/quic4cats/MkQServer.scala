@@ -6,7 +6,7 @@ import java.security.KeyStore
 
 import cats.effect.Resource
 import cats.effect.kernel.Async
-import net.luminis.quic.log.{ Logger as QLogger, SysOutLogger }
+import net.luminis.quic.log.Logger as QLogger
 import net.luminis.quic.server.{ ApplicationProtocolConnectionFactory, ServerConnector }
 
 case class QServerParams(
@@ -35,25 +35,18 @@ trait MkQServer[F[_]]:
   def newServer(
       params: QServerParams,
       factory: ApplicationProtocolConnectionFactory,
-      log: QLogger = MkQServer.defaultLogger()
+      log: QLogger = QDefaults.logger()
   ): Resource[F, QConnectorF[F]]
 
 object MkQServer:
 
   def apply[F[_]](using ev: MkQServer[F]): MkQServer[F] = ev
 
-  def defaultLogger(): QLogger =
-    val logger = SysOutLogger()
-    logger.timeFormat(QLogger.TimeFormat.Long)
-    logger.logInfo(true)
-    logger.logWarning(true)
-    logger
-
   given [F[_]: Async]: MkQServer[F] with
     def newServer(
         params: QServerParams,
         factory: ApplicationProtocolConnectionFactory,
-        log: QLogger = defaultLogger()
+        log: QLogger = QDefaults.logger()
     ): Resource[F, QConnectorF[F]] =
       Resource.make(
         Async[F].blocking {
